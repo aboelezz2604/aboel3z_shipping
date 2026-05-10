@@ -2,34 +2,41 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نظام تسجيل بوالص الشحن - Antika portrait</title>
+    <title>نظام Antika portrait الاحترافي</title>
     <style>
-        /* تنسيقات الصفحة العامة */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; padding: 20px; }
         .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; }
+        h2 { text-align: center; color: #333; margin-bottom: 25px; }
         
-        /* تنسيق الخانات */
         .form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        input { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; }
-        .btn-add { background-color: #28a745; color: white; width: 100%; font-size: 16px; }
-        .btn-print { background-color: #007bff; color: white; margin-top: 20px; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; outline: none; }
+        input:focus { border-color: #007bff; }
         
-        /* تنسيق البوليصة المعروضة */
+        .button-group { display: flex; gap: 10px; }
+        button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 6px; transition: 0.3s; font-weight: bold; }
+        .btn-add { background-color: #28a745; color: white; flex: 2; }
+        .btn-add:hover { background-color: #218838; }
+        .btn-print { background-color: #007bff; color: white; flex: 1; }
+        
         .labels-container { margin-top: 30px; }
-        .label-item { border: 2px solid #000; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; position: relative; min-height: 120px; }
-        .label-info { line-height: 1.6; }
-        .label-boxes { display: flex; flex-direction: column; gap: 5px; text-align: center; }
-        .box { border: 1px solid #000; width: 100px; height: 45px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
-        .watermark { position: absolute; right: 25%; top: 35%; font-size: 35px; color: rgba(0,0,0,0.05); transform: rotate(-15deg); font-weight: bold; pointer-events: none; white-space: nowrap; }
+        .label-item { border: 2px solid #000; padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; position: relative; min-height: 130px; background: #fff; }
+        
+        /* أزرار التحكم داخل البوليصة */
+        .controls { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 5px; }
+        .btn-edit { background-color: #ffc107; color: #000; padding: 5px 10px; font-size: 12px; }
+        .btn-delete { background-color: #dc3545; color: white; padding: 5px 10px; font-size: 12px; }
 
-        /* إعدادات الطباعة */
+        .label-info { line-height: 1.8; font-size: 15px; }
+        .label-boxes { display: flex; flex-direction: column; gap: 8px; text-align: center; min-width: 120px; }
+        .box { border: 2px solid #000; padding: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; }
+        .watermark { position: absolute; right: 25%; top: 35%; font-size: 40px; color: rgba(0,0,0,0.04); transform: rotate(-15deg); font-weight: bold; pointer-events: none; white-space: nowrap; }
+
         @media print {
             .no-print { display: none !important; }
             body { background: white; padding: 0; }
             .container { box-shadow: none; max-width: 100%; padding: 0; }
-            .label-item { page-break-inside: avoid; border: 1px solid #000; margin-bottom: 10px; }
+            .label-item { page-break-inside: avoid; margin-bottom: 15px; border-width: 1px; }
+            .controls { display: none !important; } /* إخفاء أزرار التعديل والحذف عند الطباعة */
         }
     </style>
 </head>
@@ -37,8 +44,9 @@
 
 <div class="container">
     <div class="no-print">
-        <h2>تسجيل بيانات الشحن - Antika portrait</h2>
+        <h2>Antika portrait - لوحة التحكم</h2>
         <div class="form-group">
+            <input type="hidden" id="editIndex" value="-1">
             <input type="text" id="custName" placeholder="اسم العميل">
             <input type="text" id="custPhone" placeholder="رقم الهاتف">
             <input type="text" id="custAddress" placeholder="العنوان بالتفصيل">
@@ -46,8 +54,10 @@
             <input type="text" id="itemCode" placeholder="الكود">
             <input type="text" id="itemPrice" placeholder="السعر">
         </div>
-        <button class="btn-add" onclick="addLabel()">إضافة بوليصة +</button>
-        <button class="btn-print" onclick="window.print()">طباعة البوالص المحددة</button>
+        <div class="button-group">
+            <button class="btn-add" id="mainBtn" onclick="handleAction()">إضافة بوليصة +</button>
+            <button class="btn-print" onclick="window.print()">طباعة الكل</button>
+        </div>
     </div>
 
     <div id="labelsArea" class="labels-container">
@@ -55,47 +65,91 @@
 </div>
 
 <script>
-    function addLabel() {
-        const name = document.getElementById('custName').value;
-        const phone = document.getElementById('custPhone').value;
-        const address = document.getElementById('custAddress').value;
-        const size = document.getElementById('itemSize').value;
-        const code = document.getElementById('itemCode').value;
-        const price = document.getElementById('itemPrice').value;
+    let labels = [];
 
-        if(name === "" || phone === "") {
-            alert("يرجى إدخال الاسم ورقم الهاتف");
+    function handleAction() {
+        const editIndex = document.getElementById('editIndex').value;
+        const data = {
+            name: document.getElementById('custName').value,
+            phone: document.getElementById('custPhone').value,
+            address: document.getElementById('custAddress').value,
+            size: document.getElementById('itemSize').value,
+            code: document.getElementById('itemCode').value,
+            price: document.getElementById('itemPrice').value
+        };
+
+        if(data.name === "" || data.phone === "") {
+            alert("أدخل الاسم والرقم يا محمد أولاً");
             return;
         }
 
-        const labelHTML = `
-            <div class="label-item">
-                <div class="watermark">Antika portrait</div>
-                <div class="label-info">
-                    <strong>اسم العميل:</strong> ${name}<br>
-                    <strong>رقم الهاتف:</strong> ${phone}<br>
-                    <strong>العنوان:</strong> ${address}<br>
-                    <strong>المقاس:</strong> ${size || '-'}<br>
-                    <strong>ملاحظات:</strong> /
-                </div>
-                <div class="label-boxes">
-                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 5px;">Antika portrait</div>
-                    <div class="box">
-                        <span style="font-size: 10px;">الكود:</span>
-                        <span>${code}</span>
-                    </div>
-                    <div class="box">
-                        <span style="font-size: 10px;">السعر:</span>
-                        <span>${price}</span>
-                    </div>
-                </div>
-            </div>
-        `;
+        if(editIndex === "-1") {
+            labels.push(data); // إضافة جديدة
+        } else {
+            labels[editIndex] = data; // تحديث الحالية
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('mainBtn').innerText = "إضافة بوليصة +";
+            document.getElementById('mainBtn').style.backgroundColor = "#28a745";
+        }
 
-        document.getElementById('labelsArea').innerHTML += labelHTML;
+        renderLabels();
+        clearInputs();
+    }
+
+    function renderLabels() {
+        const area = document.getElementById('labelsArea');
+        area.innerHTML = "";
         
-        // مسح الخانات بعد الإضافة
-        document.querySelectorAll('.form-group input').forEach(input => input.value = "");
+        labels.forEach((item, index) => {
+            area.innerHTML += `
+                <div class="label-item">
+                    <div class="watermark">Antika portrait</div>
+                    <div class="label-info">
+                        <strong>اسم العميل:</strong> ${item.name}<br>
+                        <strong>رقم الهاتف:</strong> ${item.phone}<br>
+                        <strong>العنوان:</strong> ${item.address}<br>
+                        <strong>المقاس:</strong> ${item.size || '-'}<br>
+                        <strong>ملاحظات:</strong> /
+                    </div>
+                    <div class="label-boxes">
+                        <div style="font-size: 14px; font-weight: bold;">Antika portrait</div>
+                        <div class="box"><span>الكود</span><span>${item.code}</span></div>
+                        <div class="box"><span>السعر</span><span>${item.price}</span></div>
+                    </div>
+                    <div class="controls no-print">
+                        <button class="btn-edit" onclick="editLabel(${index})">تعديل</button>
+                        <button class="btn-delete" onclick="deleteLabel(${index})">حذف</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function editLabel(index) {
+        const item = labels[index];
+        document.getElementById('custName').value = item.name;
+        document.getElementById('custPhone').value = item.phone;
+        document.getElementById('custAddress').value = item.address;
+        document.getElementById('itemSize').value = item.size;
+        document.getElementById('itemCode').value = item.code;
+        document.getElementById('itemPrice').value = item.price;
+        
+        document.getElementById('editIndex').value = index;
+        document.getElementById('mainBtn').innerText = "تحديث البيانات الآن";
+        document.getElementById('mainBtn').style.backgroundColor = "#ffc107";
+        window.scrollTo(0,0);
+    }
+
+    function deleteLabel(index) {
+        if(confirm("متأكد إنك عايز تمسح البوليصة دي يا محمد؟")) {
+            labels.splice(index, 1);
+            renderLabels();
+        }
+    }
+
+    function clearInputs() {
+        document.querySelectorAll('.form-group input').forEach(i => i.value = "");
+        document.getElementById('editIndex').value = "-1";
     }
 </script>
 
