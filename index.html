@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نظام تسجيل بوالص الشحن - Antika portrait</title>
+    <style>
+        /* تنسيقات الصفحة العامة */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        
+        /* تنسيق الخانات */
+        .form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; }
+        .btn-add { background-color: #28a745; color: white; width: 100%; font-size: 16px; }
+        .btn-print { background-color: #007bff; color: white; margin-top: 20px; }
+        
+        /* تنسيق البوليصة المعروضة */
+        .labels-container { margin-top: 30px; }
+        .label-item { border: 2px solid #000; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; position: relative; min-height: 120px; }
+        .label-info { line-height: 1.6; }
+        .label-boxes { display: flex; flex-direction: column; gap: 5px; text-align: center; }
+        .box { border: 1px solid #000; width: 100px; height: 45px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+        .watermark { position: absolute; right: 25%; top: 35%; font-size: 35px; color: rgba(0,0,0,0.05); transform: rotate(-15deg); font-weight: bold; pointer-events: none; white-space: nowrap; }
+
+        /* إعدادات الطباعة */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            .label-item { page-break-inside: avoid; border: 1px solid #000; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="no-print">
+        <h2>تسجيل بيانات الشحن - Antika portrait</h2>
+        <div class="form-group">
+            <input type="text" id="custName" placeholder="اسم العميل">
+            <input type="text" id="custPhone" placeholder="رقم الهاتف">
+            <input type="text" id="custAddress" placeholder="العنوان بالتفصيل">
+            <input type="text" id="itemSize" placeholder="المقاس">
+            <input type="text" id="itemCode" placeholder="الكود">
+            <input type="text" id="itemPrice" placeholder="السعر">
+        </div>
+        <button class="btn-add" onclick="addLabel()">إضافة بوليصة +</button>
+        <button class="btn-print" onclick="window.print()">طباعة البوالص المحددة</button>
+    </div>
+
+    <div id="labelsArea" class="labels-container">
+        </div>
+</div>
+
+<script>
+    function addLabel() {
+        const name = document.getElementById('custName').value;
+        const phone = document.getElementById('custPhone').value;
+        const address = document.getElementById('custAddress').value;
+        const size = document.getElementById('itemSize').value;
+        const code = document.getElementById('itemCode').value;
+        const price = document.getElementById('itemPrice').value;
+
+        if(name === "" || phone === "") {
+            alert("يرجى إدخال الاسم ورقم الهاتف");
+            return;
+        }
+
+        const labelHTML = `
+            <div class="label-item">
+                <div class="watermark">Antika portrait</div>
+                <div class="label-info">
+                    <strong>اسم العميل:</strong> ${name}<br>
+                    <strong>رقم الهاتف:</strong> ${phone}<br>
+                    <strong>العنوان:</strong> ${address}<br>
+                    <strong>المقاس:</strong> ${size || '-'}<br>
+                    <strong>ملاحظات:</strong> /
+                </div>
+                <div class="label-boxes">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 5px;">Antika portrait</div>
+                    <div class="box">
+                        <span style="font-size: 10px;">الكود:</span>
+                        <span>${code}</span>
+                    </div>
+                    <div class="box">
+                        <span style="font-size: 10px;">السعر:</span>
+                        <span>${price}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('labelsArea').innerHTML += labelHTML;
+        
+        // مسح الخانات بعد الإضافة
+        document.querySelectorAll('.form-group input').forEach(input => input.value = "");
+    }
+</script>
+
+</body>
+</html>
