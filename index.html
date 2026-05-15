@@ -10,7 +10,7 @@
         h2 { text-align: center; color: #333; margin-bottom: 25px; }
         
         .form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; outline: none; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; outline: none; background-color: white; }
         
         .button-group { display: flex; gap: 10px; }
         button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 6px; transition: 0.3s; font-weight: bold; font-size: 16px; }
@@ -75,6 +75,17 @@
             <input type="text" id="itemSize" placeholder="المقاس">
             <input type="text" id="itemCode" placeholder="الكود">
             <input type="text" id="itemPrice" placeholder="السعر">
+            <!-- قائمة اختيار يوم الأسبوع -->
+            <select id="labelDay">
+                <option value="">اختر اليوم (اختياري)</option>
+                <option value="السبت">السبت</option>
+                <option value="الأحد">الأحد</option>
+                <option value="الإثنين">الإثنين</option>
+                <option value="الثلاثاء">الثلاثاء</option>
+                <option value="الأربعاء">الأربعاء</option>
+                <option value="الخميس">الخميس</option>
+                <option value="الجمعة">الجمعة</option>
+            </select>
         </div>
         <div class="button-group">
             <button class="btn-add" id="mainBtn" onclick="handleAction()">إضافة بوليصة +</button>
@@ -83,7 +94,7 @@
     </div>
 
     <div id="labelsArea" class="labels-container">
-        </div>
+    </div>
 </div>
 
 <script>
@@ -97,7 +108,8 @@
             address: document.getElementById('custAddress').value,
             size: document.getElementById('itemSize').value,
             code: document.getElementById('itemCode').value,
-            price: document.getElementById('itemPrice').value
+            price: document.getElementById('itemPrice').value,
+            day: document.getElementById('labelDay').value // حفظ اليوم
         };
 
         if(data.name === "" || data.phone === "") {
@@ -123,6 +135,9 @@
         area.innerHTML = "";
         
         labels.forEach((item, index) => {
+            // تحديد النص اللي هيظهر في خانة الملاحظات بناءً على اختيار اليوم
+            const notesContent = item.day ? item.day : "/";
+
             area.innerHTML += `
                 <div class="label-item">
                     <div class="watermark">Antika portrait</div>
@@ -131,12 +146,12 @@
                         <strong>رقم الهاتف:</strong> ${item.phone}<br>
                         <strong>العنوان:</strong> ${item.address}<br>
                         <strong>المقاس:</strong> ${item.size || '-'}<br>
-                        <strong>ملاحظات:</strong> /
+                        <strong>ملاحظات:</strong> ${notesContent}
                     </div>
                     <div class="label-boxes">
                         <div style="font-size: 16px; font-weight: bold;">Antika portrait</div>
-                        <div class="box"><span>الكود</span><span>${item.code}</span></div>
-                        <div class="box"><span>السعر</span><span>${item.price}</span></div>
+                        <div class="box"><span>الكود</span><span>${item.code || '-'}</span></div>
+                        <div class="box"><span>السعر</span><span>${item.price || '-'}</span></div>
                     </div>
                     <div class="controls no-print">
                         <button class="btn-edit" onclick="editLabel(${index})">تعديل</button>
@@ -155,6 +170,7 @@
         document.getElementById('itemSize').value = item.size;
         document.getElementById('itemCode').value = item.code;
         document.getElementById('itemPrice').value = item.price;
+        document.getElementById('labelDay').value = item.day || ""; // استرجاع اليوم عند التعديل
         
         document.getElementById('editIndex').value = index;
         document.getElementById('mainBtn').innerText = "تحديث البيانات";
@@ -171,6 +187,7 @@
 
     function clearInputs() {
         document.querySelectorAll('.form-group input').forEach(i => i.value = "");
+        document.getElementById('labelDay').value = ""; // تفريغ الاختيار
         document.getElementById('editIndex').value = "-1";
     }
 </script>
