@@ -2,60 +2,195 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>أنتيكا بورتريه - نظام الشحن</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antika portrait - نظام البوالص المطور</title>
     <style>
-        :root { --primary: #8c6239; --bg: #f9f6f0; }
-        body { font-family: sans-serif; background: var(--bg); padding: 20px; text-align: center; }
-        .card { background: var(--primary); color: white; padding: 20px; border-radius: 10px; display: inline-block; margin-bottom: 20px; min-width: 200px; }
-        .number { font-size: 3rem; font-weight: bold; }
-        table { width: 100%; max-width: 900px; margin: 0 auto; border-collapse: collapse; background: white; }
-        th, td { border: 1px solid #ddd; padding: 12px; }
-        th { background: #eee; color: var(--primary); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin-bottom: 25px; }
+        
+        .form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; outline: none; background-color: white; }
+        
+        .button-group { display: flex; gap: 10px; }
+        button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 6px; transition: 0.3s; font-weight: bold; font-size: 16px; }
+        .btn-add { background-color: #28a745; color: white; flex: 2; }
+        .btn-print { background-color: #007bff; color: white; flex: 1; }
+        
+        .labels-container { margin-top: 30px; }
+        
+        /* تصميم البوليصة ليكون واضحاً ومناسباً للمقاس */
+        .label-item { 
+            border: 2px solid #000; 
+            padding: 10px 20px; 
+            margin-bottom: 10px; 
+            display: flex; 
+            justify-content: space-between; 
+            position: relative; 
+            height: 185px; /* الارتفاع المناسب لـ 5 بوالص في صفحة A4 */
+            background: #fff;
+            box-sizing: border-box;
+        }
+        
+        .label-info { line-height: 1.6; font-size: 19px; color: #000; font-weight: 600; }
+        .label-info strong { font-weight: 900; font-size: 20px; }
+
+        .label-boxes { display: flex; flex-direction: column; gap: 5px; text-align: center; min-width: 140px; }
+        .box { border: 2px solid #000; padding: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; height: 65px; }
+        .box span:first-child { font-size: 14px; margin-bottom: 2px; }
+        .box span:last-child { font-size: 22px; }
+
+        .watermark { position: absolute; right: 20%; top: 35%; font-size: 50px; color: rgba(0,0,0,0.04); transform: rotate(-15deg); font-weight: bold; pointer-events: none; white-space: nowrap; }
+
+        .controls { position: absolute; left: 5px; top: 5px; display: flex; gap: 5px; }
+        .btn-edit { background-color: #ffc107; color: #000; padding: 3px 8px; font-size: 12px; border-radius: 4px; }
+        .btn-delete { background-color: #dc3545; color: white; padding: 3px 8px; font-size: 12px; border-radius: 4px; }
+
+        /* إعدادات الطباعة الدقيقة */
+        @media print {
+            @page { size: A4; margin: 0.5cm; }
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; margin: 0; }
+            .label-item { 
+                page-break-inside: avoid; 
+                border-width: 2px; 
+                margin-bottom: 8px;
+                height: 18.5vh; /* توزيع البوالص بالتساوي على ارتفاع الصفحة */
+            }
+            .controls { display: none !important; }
+        }
     </style>
 </head>
 <body>
 
-    <h1>Antika Portrait - نظام الشحن</h1>
-    
-    <div class="card">
-        <div>إجمالي طرود اليوم</div>
-        <div id="totalToday" class="number">0</div>
+<div class="container">
+    <div class="no-print">
+        <h2>Antika portrait - لوحة التحكم</h2>
+        <div class="form-group">
+            <input type="hidden" id="editIndex" value="-1">
+            <input type="text" id="custName" placeholder="اسم العميل">
+            <input type="text" id="custPhone" placeholder="رقم الهاتف">
+            <input type="text" id="custAddress" placeholder="العنوان بالتفصيل">
+            <input type="text" id="itemSize" placeholder="المقاس">
+            <input type="text" id="itemCode" placeholder="الكود">
+            <input type="text" id="itemPrice" placeholder="السعر">
+            <!-- قائمة اختيار يوم الأسبوع -->
+            <select id="labelDay">
+                <option value="">اختر اليوم (اختياري)</option>
+                <option value="السبت">السبت</option>
+                <option value="الأحد">الأحد</option>
+                <option value="الإثنين">الإثنين</option>
+                <option value="الثلاثاء">الثلاثاء</option>
+                <option value="الأربعاء">الأربعاء</option>
+                <option value="الخميس">الخميس</option>
+                <option value="الجمعة">الجمعة</option>
+            </select>
+        </div>
+        <div class="button-group">
+            <button class="btn-add" id="mainBtn" onclick="handleAction()">إضافة بوليصة +</button>
+            <button class="btn-print" onclick="window.print()">طباعة البوالص</button>
+        </div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>رقم الطرد</th>
-                <th>اسم العميل</th>
-                <th>المحافظة</th>
-                <th>رقم الهاتف</th>
-            </tr>
-        </thead>
-        <tbody id="packageTable">
-            </tbody>
-    </table>
+    <div id="labelsArea" class="labels-container">
+    </div>
+</div>
 
-    <script>
-        // مصفوفة تجريبية للبيانات (بدلاً من قاعدة البيانات)
-        const packages = [
-            {id: 1, name: "محمد علي", city: "القاهرة", phone: "010xxx"},
-            {id: 2, name: "أحمد حسن", city: "الإسكندرية", phone: "012xxx"}
-        ];
+<script>
+    let labels = [];
 
-        // عرض الإجمالي
-        document.getElementById('totalToday').innerText = packages.length;
+    function handleAction() {
+        const editIndex = document.getElementById('editIndex').value;
+        const data = {
+            name: document.getElementById('custName').value,
+            phone: document.getElementById('custPhone').value,
+            address: document.getElementById('custAddress').value,
+            size: document.getElementById('itemSize').value,
+            code: document.getElementById('itemCode').value,
+            price: document.getElementById('itemPrice').value,
+            day: document.getElementById('labelDay').value // حفظ اليوم
+        };
 
-        // عرض الجدول
-        const tableBody = document.getElementById('packageTable');
-        packages.forEach(pkg => {
-            tableBody.innerHTML += `
-                <tr>
-                    <td>#${pkg.id}</td>
-                    <td>${pkg.name}</td>
-                    <td>${pkg.city}</td>
-                    <td>${pkg.phone}</td>
-                </tr>`;
+        if(data.name === "" || data.phone === "") {
+            alert("يا محمد، لازم تدخل الاسم والرقم");
+            return;
+        }
+
+        if(editIndex === "-1") {
+            labels.push(data);
+        } else {
+            labels[editIndex] = data;
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('mainBtn').innerText = "إضافة بوليصة +";
+            document.getElementById('mainBtn').style.backgroundColor = "#28a745";
+        }
+
+        renderLabels();
+        clearInputs();
+    }
+
+    function renderLabels() {
+        const area = document.getElementById('labelsArea');
+        area.innerHTML = "";
+        
+        labels.forEach((item, index) => {
+            // تحديد النص اللي هيظهر في خانة الملاحظات بناءً على اختيار اليوم
+            const notesContent = item.day ? item.day : "/";
+
+            area.innerHTML += `
+                <div class="label-item">
+                    <div class="watermark">Antika portrait</div>
+                    <div class="label-info">
+                        <strong>اسم العميل:</strong> ${item.name}<br>
+                        <strong>رقم الهاتف:</strong> ${item.phone}<br>
+                        <strong>العنوان:</strong> ${item.address}<br>
+                        <strong>المقاس:</strong> ${item.size || '-'}<br>
+                        <strong>ملاحظات:</strong> ${notesContent}
+                    </div>
+                    <div class="label-boxes">
+                        <div style="font-size: 16px; font-weight: bold;">Antika portrait</div>
+                        <div class="box"><span>الكود</span><span>${item.code || '-'}</span></div>
+                        <div class="box"><span>السعر</span><span>${item.price || '-'}</span></div>
+                    </div>
+                    <div class="controls no-print">
+                        <button class="btn-edit" onclick="editLabel(${index})">تعديل</button>
+                        <button class="btn-delete" onclick="deleteLabel(${index})">حذف</button>
+                    </div>
+                </div>
+            `;
         });
-    </script>
+    }
+
+    function editLabel(index) {
+        const item = labels[index];
+        document.getElementById('custName').value = item.name;
+        document.getElementById('custPhone').value = item.phone;
+        document.getElementById('custAddress').value = item.address;
+        document.getElementById('itemSize').value = item.size;
+        document.getElementById('itemCode').value = item.code;
+        document.getElementById('itemPrice').value = item.price;
+        document.getElementById('labelDay').value = item.day || ""; // استرجاع اليوم عند التعديل
+        
+        document.getElementById('editIndex').value = index;
+        document.getElementById('mainBtn').innerText = "تحديث البيانات";
+        document.getElementById('mainBtn').style.backgroundColor = "#ffc107";
+        window.scrollTo(0,0);
+    }
+
+    function deleteLabel(index) {
+        if(confirm("تمسح البوليصة دي يا محمد؟")) {
+            labels.splice(index, 1);
+            renderLabels();
+        }
+    }
+
+    function clearInputs() {
+        document.querySelectorAll('.form-group input').forEach(i => i.value = "");
+        document.getElementById('labelDay').value = ""; // تفريغ الاختيار
+        document.getElementById('editIndex').value = "-1";
+    }
+</script>
+
 </body>
 </html>
