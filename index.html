@@ -1,146 +1,61 @@
-<?php
-// 1. ضبط المنطقة الزمنية لتوقيت مصر لضمان دقة حساب طرود اليوم
-date_default_timezone_set('Africa/Cairo');
-
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db_name = "antika_portrait";
-
-$conn = new mysqli($host, $user, $pass, $db_name);
-
-if ($conn->connect_error) {
-    die("فشل الاتصال بقاعدة البيانات: " . $conn->connect_error);
-}
-
-// ضبط الترميز وتوقيت السيرفر في MySQL أيضاً
-$conn->set_charset("utf8mb4");
-$conn->query("SET time_zone = '+02:00'"); // توقيت القاهرة
-
-// 2. استعلام جلب الإجمالي بطريقة مرنة (تتحمل لو كان الحقل نص أو تاريخ)
-$current_date = date('Y-m-d');
-$sql_total_today = "SELECT COUNT(*) as total_packages FROM packages WHERE created_at LIKE '$current_date%'";
-$result_today = $conn->query($sql_total_today);
-$total_packages_today = 0;
-
-if ($result_today && $row = $result_today->fetch_assoc()) {
-    $total_packages_today = $row['total_packages'];
-}
-
-// 3. جلب طرود اليوم
-$sql_packages = "SELECT * FROM packages WHERE created_at LIKE '$current_date%' ORDER BY id DESC";
-$packages_result = $conn->query($sql_packages);
-?>
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أنتيكا بورتريه - إدارة الطرود</title>
+    <title>أنتيكا بورتريه - نظام الشحن</title>
     <style>
-        :root {
-            --primary-color: #8c6239;
-            --dark-color: #2b2b2b;
-            --light-bg: #f9f6f0;
-            --card-bg: #ffffff;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light-bg);
-            color: var(--dark-color);
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 15px;
-            margin-bottom: 30px;
-        }
-        h1 { color: var(--primary-color); margin: 0; }
-        
-        .summary-card {
-            background: var(--primary-color);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-width: 300px;
-            margin-bottom: 30px;
-        }
-        .summary-card h3 { margin: 0 0 10px 0; font-size: 1.1rem; font-weight: normal; opacity: 0.9; }
-        .summary-card .number { font-size: 2.5rem; font-weight: bold; }
-
-        .table-container {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            overflow-x: auto;
-        }
-        table { width: 100%; border-collapse: collapse; text-align: right; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #ddd; }
-        th { background-color: #f2ede4; color: var(--primary-color); }
-        tr:hover { background-color: #fdfcf9; }
-        .no-data { text-align: center; padding: 20px; color: #777; }
+        :root { --primary: #8c6239; --bg: #f9f6f0; }
+        body { font-family: sans-serif; background: var(--bg); padding: 20px; text-align: center; }
+        .card { background: var(--primary); color: white; padding: 20px; border-radius: 10px; display: inline-block; margin-bottom: 20px; min-width: 200px; }
+        .number { font-size: 3rem; font-weight: bold; }
+        table { width: 100%; max-width: 900px; margin: 0 auto; border-collapse: collapse; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; }
+        th { background: #eee; color: var(--primary); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>Antika Portrait - نظام الشحن</h1>
-        <div>التاريخ: <?php echo date('Y-m-d'); ?></div>
-    </header>
-
-    <div class="summary-card">
-        <h3>إجمالي طرود اليوم</h3>
-        <div class="number"><?php echo $total_packages_today; ?></div>
+    <h1>Antika Portrait - نظام الشحن</h1>
+    
+    <div class="card">
+        <div>إجمالي طرود اليوم</div>
+        <div id="totalToday" class="number">0</div>
     </div>
 
-    <div class="table-container">
-        <h2>قائمة طرود اليوم</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>رقم الطرد</th>
-                    <th>اسم العميل</th>
-                    <th>المحافظة / العنوان</th>
-                    <th>رقم الهاتف</th>
-                    <th>ملاحظات الشحن</th>
-                    <th>وقت الإضافة</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php 
-                if ($packages_result && $packages_result->num_rows > 0) {
-                    while($row = $packages_result->fetch_assoc()) {
-                        echo "<tr>";
-                        echo "<td>#" . $row['id'] . "</td>";
-                        echo "<td>" . htmlspecialchars($row['client_name'] ?? '') . "</td>";
-                        echo "<td>" . htmlspecialchars($row['address'] ?? '') . "</td>";
-                        echo "<td>" . htmlspecialchars($row['phone'] ?? '') . "</td>";
-                        echo "<td>" . htmlspecialchars($row['notes'] ?? '') . "</td>";
-                        echo "<td>" . (!empty($row['created_at']) ? date('H:i A', strtotime($row['created_at'])) : '--:--') . "</td>";
-                        echo "</tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='6' class='no-data'>لا توجد طرود مضافة اليوم حتى الآن.</td></tr>";
-                }
-                ?>
+    <table>
+        <thead>
+            <tr>
+                <th>رقم الطرد</th>
+                <th>اسم العميل</th>
+                <th>المحافظة</th>
+                <th>رقم الهاتف</th>
+            </tr>
+        </thead>
+        <tbody id="packageTable">
             </tbody>
-        </table>
-    </div>
-</div>
+    </table>
 
+    <script>
+        // مصفوفة تجريبية للبيانات (بدلاً من قاعدة البيانات)
+        const packages = [
+            {id: 1, name: "محمد علي", city: "القاهرة", phone: "010xxx"},
+            {id: 2, name: "أحمد حسن", city: "الإسكندرية", phone: "012xxx"}
+        ];
+
+        // عرض الإجمالي
+        document.getElementById('totalToday').innerText = packages.length;
+
+        // عرض الجدول
+        const tableBody = document.getElementById('packageTable');
+        packages.forEach(pkg => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td>#${pkg.id}</td>
+                    <td>${pkg.name}</td>
+                    <td>${pkg.city}</td>
+                    <td>${pkg.phone}</td>
+                </tr>`;
+        });
+    </script>
 </body>
 </html>
-<?php $conn->close(); ?>
