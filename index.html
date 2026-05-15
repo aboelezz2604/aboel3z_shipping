@@ -1,196 +1,172 @@
+<?php
+// 1. الاتصال بقاعدة البيانات (تأكد من تعديل البيانات وفقاً لملف السيرفر لديك)
+$host = "localhost";
+$user = "root";
+$pass = "";
+$db_name = "antika_portrait";
+
+$conn = new mysqli($host, $user, $pass, $db_name);
+
+if ($conn->connect_error) {
+    die("فشل الاتصال بقاعدة البيانات: " . $conn->connect_error);
+}
+
+// ضبط الترميز لدعم اللغة العربية بشكل صحيح
+$conn->set_charset("utf8mb4");
+
+// 2. استعلام لجلب إجمالي عدد طرود اليوم الحالي فقط
+$current_date = date('Y-m-d');
+$sql_total_today = "SELECT COUNT(*) as total_packages FROM packages WHERE DATE(created_at) = '$current_date'";
+$result_today = $conn->query($sql_total_today);
+$total_packages_today = 0;
+
+if ($result_today && $row = $result_today->fetch_assoc()) {
+    $total_packages_today = $row['total_packages'];
+}
+
+// 3. جلب كافة طرود اليوم لعرضها في الجدول
+$sql_packages = "SELECT * FROM packages WHERE DATE(created_at) = '$current_date' ORDER BY id DESC";
+$packages_result = $conn->query($sql_packages);
+?>
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antika portrait - نظام البوالص المطور</title>
+    <title>أنتيكا بورتريه - إدارة الطرود</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin-bottom: 25px; }
-        
-        .form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; outline: none; background-color: white; }
-        
-        .button-group { display: flex; gap: 10px; }
-        button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 6px; transition: 0.3s; font-weight: bold; font-size: 16px; }
-        .btn-add { background-color: #28a745; color: white; flex: 2; }
-        .btn-print { background-color: #007bff; color: white; flex: 1; }
-        
-        .labels-container { margin-top: 30px; }
-        
-        /* تصميم البوليصة ليكون واضحاً ومناسباً للمقاس */
-        .label-item { 
-            border: 2px solid #000; 
-            padding: 10px 20px; 
-            margin-bottom: 10px; 
-            display: flex; 
-            justify-content: space-between; 
-            position: relative; 
-            height: 185px; /* الارتفاع المناسب لـ 5 بوالص في صفحة A4 */
-            background: #fff;
-            box-sizing: border-box;
+        :root {
+            --primary-color: #8c6239; /* لون أنتيكا البني المميز */
+            --dark-color: #2b2b2b;
+            --light-bg: #f9f6f0;
+            --card-bg: #ffffff;
         }
-        
-        .label-info { line-height: 1.6; font-size: 19px; color: #000; font-weight: 600; }
-        .label-info strong { font-weight: 900; font-size: 20px; }
-
-        .label-boxes { display: flex; flex-direction: column; gap: 5px; text-align: center; min-width: 140px; }
-        .box { border: 2px solid #000; padding: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; height: 65px; }
-        .box span:first-child { font-size: 14px; margin-bottom: 2px; }
-        .box span:last-child { font-size: 22px; }
-
-        .watermark { position: absolute; right: 20%; top: 35%; font-size: 50px; color: rgba(0,0,0,0.04); transform: rotate(-15deg); font-weight: bold; pointer-events: none; white-space: nowrap; }
-
-        .controls { position: absolute; left: 5px; top: 5px; display: flex; gap: 5px; }
-        .btn-edit { background-color: #ffc107; color: #000; padding: 3px 8px; font-size: 12px; border-radius: 4px; }
-        .btn-delete { background-color: #dc3545; color: white; padding: 3px 8px; font-size: 12px; border-radius: 4px; }
-
-        /* إعدادات الطباعة الدقيقة */
-        @media print {
-            @page { size: A4; margin: 0.5cm; }
-            .no-print { display: none !important; }
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; max-width: 100%; padding: 0; margin: 0; }
-            .label-item { 
-                page-break-inside: avoid; 
-                border-width: 2px; 
-                margin-bottom: 8px;
-                height: 18.5vh; /* توزيع البوالص بالتساوي على ارتفاع الصفحة */
-            }
-            .controls { display: none !important; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+        /* كارت إجمالي الطرود اليومية */
+        .summary-card {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 300px;
+            margin-bottom: 30px;
+        }
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+        .summary-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        /* تصميم جدول الطرود */
+        .table-container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2ede4;
+            color: var(--primary-color);
+        }
+        tr:hover {
+            background-color: #fdfcf9;
+        }
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #777;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="no-print">
-        <h2>Antika portrait - لوحة التحكم</h2>
-        <div class="form-group">
-            <input type="hidden" id="editIndex" value="-1">
-            <input type="text" id="custName" placeholder="اسم العميل">
-            <input type="text" id="custPhone" placeholder="رقم الهاتف">
-            <input type="text" id="custAddress" placeholder="العنوان بالتفصيل">
-            <input type="text" id="itemSize" placeholder="المقاس">
-            <input type="text" id="itemCode" placeholder="الكود">
-            <input type="text" id="itemPrice" placeholder="السعر">
-            <!-- قائمة اختيار يوم الأسبوع -->
-            <select id="labelDay">
-                <option value="">اختر اليوم (اختياري)</option>
-                <option value="السبت">السبت</option>
-                <option value="الأحد">الأحد</option>
-                <option value="الإثنين">الإثنين</option>
-                <option value="الثلاثاء">الثلاثاء</option>
-                <option value="الأربعاء">الأربعاء</option>
-                <option value="الخميس">الخميس</option>
-                <option value="الجمعة">الجمعة</option>
-            </select>
-        </div>
-        <div class="button-group">
-            <button class="btn-add" id="mainBtn" onclick="handleAction()">إضافة بوليصة +</button>
-            <button class="btn-print" onclick="window.print()">طباعة البوالص</button>
-        </div>
+    <header>
+        <h1>Antika Portrait - نظام الشحن</h1>
+        <div>التاريخ: <?php echo date('Y-m-d'); ?></div>
+    </header>
+
+    <!-- قمنا بوضع الإجمالي هنا ليكون أول ما تقع عليه العين عند فتح النظام -->
+    <div class="summary-card">
+        <h3>إجمالي طرود اليوم</h3>
+        <div class="number"><?php echo $total_packages_today; ?></div>
     </div>
 
-    <div id="labelsArea" class="labels-container">
+    <div class="table-container">
+        <h2>قائمة طرود اليوم اليومية</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>رقم الطرد</th>
+                    <th>اسم العميل</th>
+                    <th>المحافظة / العنوان</th>
+                    <th>رقم الهاتف</th>
+                    <th>ملاحظات الشحن</th>
+                    <th>وقت الإضافة</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php 
+                if ($packages_result && $packages_result->num_rows > 0) {
+                    while($row = $packages_result->fetch_assoc()) {
+                        echo "<tr>";
+                        echo "<td>#" . $row['id'] . "</td>";
+                        echo "<td>" . htmlspecialchars($row['client_name']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['address']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['phone']) . "</td>";
+                        // بناءً على تعديلنا السابق، تظهر هنا الملاحظات مدمج بها اليوم تلقائياً إن وُجد
+                        echo "<td>" . htmlspecialchars($row['notes']) . "</td>";
+                        echo "<td>" . date('H:i A', strtotime($row['created_at'])) . "</td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='6' class='no-data'>لا توجد طرود مضافة ليوم اليوم حتى الآن.</td></tr>";
+                }
+                ?>
+            </tbody>
+        </table>
     </div>
 </div>
 
-<script>
-    let labels = [];
-
-    function handleAction() {
-        const editIndex = document.getElementById('editIndex').value;
-        const data = {
-            name: document.getElementById('custName').value,
-            phone: document.getElementById('custPhone').value,
-            address: document.getElementById('custAddress').value,
-            size: document.getElementById('itemSize').value,
-            code: document.getElementById('itemCode').value,
-            price: document.getElementById('itemPrice').value,
-            day: document.getElementById('labelDay').value // حفظ اليوم
-        };
-
-        if(data.name === "" || data.phone === "") {
-            alert("يا محمد، لازم تدخل الاسم والرقم");
-            return;
-        }
-
-        if(editIndex === "-1") {
-            labels.push(data);
-        } else {
-            labels[editIndex] = data;
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('mainBtn').innerText = "إضافة بوليصة +";
-            document.getElementById('mainBtn').style.backgroundColor = "#28a745";
-        }
-
-        renderLabels();
-        clearInputs();
-    }
-
-    function renderLabels() {
-        const area = document.getElementById('labelsArea');
-        area.innerHTML = "";
-        
-        labels.forEach((item, index) => {
-            // تحديد النص اللي هيظهر في خانة الملاحظات بناءً على اختيار اليوم
-            const notesContent = item.day ? item.day : "/";
-
-            area.innerHTML += `
-                <div class="label-item">
-                    <div class="watermark">Antika portrait</div>
-                    <div class="label-info">
-                        <strong>اسم العميل:</strong> ${item.name}<br>
-                        <strong>رقم الهاتف:</strong> ${item.phone}<br>
-                        <strong>العنوان:</strong> ${item.address}<br>
-                        <strong>المقاس:</strong> ${item.size || '-'}<br>
-                        <strong>ملاحظات:</strong> ${notesContent}
-                    </div>
-                    <div class="label-boxes">
-                        <div style="font-size: 16px; font-weight: bold;">Antika portrait</div>
-                        <div class="box"><span>الكود</span><span>${item.code || '-'}</span></div>
-                        <div class="box"><span>السعر</span><span>${item.price || '-'}</span></div>
-                    </div>
-                    <div class="controls no-print">
-                        <button class="btn-edit" onclick="editLabel(${index})">تعديل</button>
-                        <button class="btn-delete" onclick="deleteLabel(${index})">حذف</button>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    function editLabel(index) {
-        const item = labels[index];
-        document.getElementById('custName').value = item.name;
-        document.getElementById('custPhone').value = item.phone;
-        document.getElementById('custAddress').value = item.address;
-        document.getElementById('itemSize').value = item.size;
-        document.getElementById('itemCode').value = item.code;
-        document.getElementById('itemPrice').value = item.price;
-        document.getElementById('labelDay').value = item.day || ""; // استرجاع اليوم عند التعديل
-        
-        document.getElementById('editIndex').value = index;
-        document.getElementById('mainBtn').innerText = "تحديث البيانات";
-        document.getElementById('mainBtn').style.backgroundColor = "#ffc107";
-        window.scrollTo(0,0);
-    }
-
-    function deleteLabel(index) {
-        if(confirm("تمسح البوليصة دي يا محمد؟")) {
-            labels.splice(index, 1);
-            renderLabels();
-        }
-    }
-
-    function clearInputs() {
-        document.querySelectorAll('.form-group input').forEach(i => i.value = "");
-        document.getElementById('labelDay').value = ""; // تفريغ الاختيار
-        document.getElementById('editIndex').value = "-1";
-    }
-</script>
-
 </body>
 </html>
+<?php $conn->close(); ?>
