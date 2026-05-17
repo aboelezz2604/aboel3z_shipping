@@ -16,6 +16,7 @@
         button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 6px; transition: 0.3s; font-weight: bold; font-size: 16px; }
         .btn-add { background-color: #28a745; color: white; flex: 2; }
         .btn-print { background-color: #007bff; color: white; flex: 1; }
+        .btn-clear-all { background-color: #dc3545; color: white; flex: 1; } /* زرار التصفير الجديد */
         
         .labels-container { margin-top: 30px; }
         
@@ -90,6 +91,7 @@
         <div class="button-group">
             <button class="btn-add" id="mainBtn" onclick="handleAction()">إضافة بوليصة +</button>
             <button class="btn-print" onclick="window.print()">طباعة البوالص</button>
+            <button class="btn-clear-all" onclick="clearAllLabels()">تصفير السيستم 🔄</button>
         </div>
     </div>
 
@@ -99,6 +101,20 @@
 
 <script>
     let labels = [];
+
+    // دالة لاسترجاع البوالص المحفوظة أول ما الصفحة تفتح
+    window.onload = function() {
+        const savedLabels = localStorage.getItem('antika_labels');
+        if (savedLabels) {
+            labels = JSON.parse(savedLabels);
+            renderLabels();
+        }
+    };
+
+    // دالة لحفظ البوالص في ذاكرة المتصفح تلقائياً
+    function saveToStorage() {
+        localStorage.setItem('antika_labels', JSON.stringify(labels));
+    }
 
     function handleAction() {
         const editIndex = document.getElementById('editIndex').value;
@@ -126,6 +142,7 @@
             document.getElementById('mainBtn').style.backgroundColor = "#28a745";
         }
 
+        saveToStorage(); // حفظ التغيير فوراً
         renderLabels();
         clearInputs();
     }
@@ -135,7 +152,6 @@
         area.innerHTML = "";
         
         labels.forEach((item, index) => {
-            // تحديد النص اللي هيظهر في خانة الملاحظات بناءً على اختيار اليوم
             const notesContent = item.day ? item.day : "/";
 
             area.innerHTML += `
@@ -170,7 +186,7 @@
         document.getElementById('itemSize').value = item.size;
         document.getElementById('itemCode').value = item.code;
         document.getElementById('itemPrice').value = item.price;
-        document.getElementById('labelDay').value = item.day || ""; // استرجاع اليوم عند التعديل
+        document.getElementById('labelDay').value = item.day || ""; 
         
         document.getElementById('editIndex').value = index;
         document.getElementById('mainBtn').innerText = "تحديث البيانات";
@@ -181,13 +197,24 @@
     function deleteLabel(index) {
         if(confirm("تمسح البوليصة دي يا محمد؟")) {
             labels.splice(index, 1);
+            saveToStorage(); // حفظ بعد الحذف الفردي
             renderLabels();
+        }
+    }
+
+    // دالة مسح كل الأوردرات وتفريغ السيستم تماماً بعد الطباعة
+    function clearAllLabels() {
+        if(confirm("هل أنت متأكد من مسح جميع البوالص وبدء يوم جديد؟ (تأكد أنك قمت بالطباعة أولاً)")) {
+            labels = [];
+            localStorage.removeItem('antika_labels'); // مسح التخزين المحلي تماماً
+            renderLabels();
+            clearInputs();
         }
     }
 
     function clearInputs() {
         document.querySelectorAll('.form-group input').forEach(i => i.value = "");
-        document.getElementById('labelDay').value = ""; // تفريغ الاختيار
+        document.getElementById('labelDay').value = ""; 
         document.getElementById('editIndex').value = "-1";
     }
 </script>
