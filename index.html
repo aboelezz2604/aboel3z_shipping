@@ -23,23 +23,23 @@
         /* تصميم البوليصة ليكون واضحاً ومناسباً للمقاس */
         .label-item { 
             border: 2px solid #000; 
-            padding: 10px 20px; 
-            margin-bottom: 10px; 
+            padding: 8px 20px; 
+            margin-bottom: 8px; 
             display: flex; 
             justify-content: space-between; 
             position: relative; 
-            height: 185px; /* الارتفاع المناسب لـ 5 بوالص في صفحة A4 */
+            height: 155px; /* تم تقليله ليستوعب 5 بوالص في الشاشة والطباعة */
             background: #fff;
             box-sizing: border-box;
         }
         
-        .label-info { line-height: 1.6; font-size: 19px; color: #000; font-weight: 600; }
-        .label-info strong { font-weight: 900; font-size: 20px; }
+        .label-info { line-height: 1.5; font-size: 18px; color: #000; font-weight: 600; }
+        .label-info strong { font-weight: 900; font-size: 19px; }
 
-        .label-boxes { display: flex; flex-direction: column; gap: 5px; text-align: center; min-width: 140px; }
-        .box { border: 2px solid #000; padding: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; height: 65px; }
-        .box span:first-child { font-size: 14px; margin-bottom: 2px; }
-        .box span:last-child { font-size: 22px; }
+        .label-boxes { display: flex; flex-direction: column; gap: 4px; text-align: center; min-width: 140px; justify-content: center; }
+        .box { border: 2px solid #000; padding: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; height: 52px; }
+        .box span:first-child { font-size: 13px; margin-bottom: 1px; }
+        .box span:last-child { font-size: 20px; }
 
         .watermark { position: absolute; right: 20%; top: 35%; font-size: 50px; color: rgba(0,0,0,0.04); transform: rotate(-15deg); font-weight: bold; pointer-events: none; white-space: nowrap; }
 
@@ -49,15 +49,15 @@
 
         /* إعدادات الطباعة الدقيقة */
         @media print {
-            @page { size: A4; margin: 0.5cm; }
+            @page { size: A4; margin: 0.4cm 0.5cm; } /* تقليل الهامش العلوي والسفلي قليلاً */
             .no-print { display: none !important; }
             body { background: white; padding: 0; }
             .container { box-shadow: none; max-width: 100%; padding: 0; margin: 0; }
             .label-item { 
                 page-break-inside: avoid; 
                 border-width: 2px; 
-                margin-bottom: 8px;
-                height: 18.5vh; /* توزيع البوالص بالتساوي على ارتفاع الصفحة */
+                margin-bottom: 4px;
+                height: 17.8vh; /* توزيع الـ 5 بوالص بالتساوي على ارتفاع الصفحة بالظبط */
             }
             .controls { display: none !important; }
         }
@@ -76,7 +76,6 @@
             <input type="text" id="itemSize" placeholder="المقاس">
             <input type="text" id="itemCode" placeholder="الكود">
             <input type="text" id="itemPrice" placeholder="السعر">
-            <!-- قائمة اختيار يوم الأسبوع -->
             <select id="labelDay">
                 <option value="">اختر اليوم (اختياري)</option>
                 <option value="السبت">السبت</option>
@@ -165,7 +164,7 @@
                         <strong>ملاحظات:</strong> ${notesContent}
                     </div>
                     <div class="label-boxes">
-                        <div style="font-size: 16px; font-weight: bold;">Antika portrait</div>
+                        <div style="font-size: 15px; font-weight: bold;">Antika portrait</div>
                         <div class="box"><span>الكود</span><span>${item.code || '-'}</span></div>
                         <div class="box"><span>السعر</span><span>${item.price || '-'}</span></div>
                     </div>
