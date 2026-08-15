@@ -98,6 +98,8 @@
         }
 
         .btn-add { background: #27ae60; color: white; }
+        .btn-update { background: #2980b9; color: white; }
+        .btn-cancel { background: #7f8c8d; color: white; display: none; }
         .btn-print { background: var(--accent); color: white; }
         .btn-clear { background: #e74c3c; color: white; }
 
@@ -115,7 +117,30 @@
 
         th { background: var(--primary); color: white; }
 
-        /* تنسيق الطباعة الأكيد ليتطابق مع الصورة */
+        .action-btns {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-edit-item {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .btn-delete-item {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        /* تنسيق الطباعة */
         .print-area {
             display: none;
         }
@@ -153,7 +178,6 @@
                 overflow: hidden;
             }
 
-            /* العلامة المائية */
             .policy-card::before {
                 content: "Antika portrait";
                 position: absolute;
@@ -167,7 +191,6 @@
                 white-space: nowrap;
             }
 
-            /* الجانب الأيمن: بيانات العميل */
             .client-details {
                 display: flex;
                 flex-direction: column;
@@ -183,7 +206,6 @@
                 line-height: 1.3;
             }
 
-            /* الجانب الأيسر: مربعات الكود والسعر */
             .left-boxes {
                 display: flex;
                 flex-direction: column;
@@ -232,6 +254,7 @@
 
     <div class="form-section">
         <form id="shippingForm">
+            <input type="hidden" id="editId">
             <div class="form-grid">
                 <div class="input-group">
                     <label>الكود</label>
@@ -274,7 +297,8 @@
             </div>
 
             <div class="btn-group">
-                <button type="submit" class="btn-add">إضافة الشحنة</button>
+                <button type="submit" id="btnSubmit" class="btn-add">إضافة الشحنة</button>
+                <button type="button" id="btnCancelEdit" class="btn-cancel" onclick="cancelEdit()">إلغاء التعديل</button>
                 <button type="button" class="btn-print" onclick="window.print()">طباعة البوالص</button>
                 <button type="button" class="btn-clear" onclick="clearAllData()">مسح الكل</button>
             </div>
@@ -309,27 +333,101 @@
     document.getElementById('shippingForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
+        const editId = document.getElementById('editId').value;
         const selectedDays = Array.from(document.querySelectorAll('.days-selector input:checked'))
             .map(cb => cb.value).join(' - ');
 
         const notesInput = document.getElementById('notes').value;
         const fullNotes = selectedDays ? (notesInput ? `${notesInput} / ${selectedDays}` : selectedDays) : notesInput;
 
-        const newShipment = {
-            id: Date.now(),
-            code: document.getElementById('code').value,
-            name: document.getElementById('clientName').value,
-            phone: document.getElementById('clientPhone').value,
-            address: document.getElementById('clientAddress').value,
-            size: document.getElementById('size').value,
-            amount: document.getElementById('amount').value,
-            notes: fullNotes
-        };
+        if (editId) {
+            // حالة التعديل
+            const index = shipments.findIndex(s => s.id == editId);
+            if (index !== -1) {
+                shipments[index] = {
+                    id: Number(editId),
+                    code: document.getElementById('code').value,
+                    name: document.getElementById('clientName').value,
+                    phone: document.getElementById('clientPhone').value,
+                    address: document.getElementById('clientAddress').value,
+                    size: document.getElementById('size').value,
+                    amount: document.getElementById('amount').value,
+                    notes: fullNotes
+                };
+            }
+        } else {
+            // حالة الإضافة الجديدة
+            const newShipment = {
+                id: Date.now(),
+                code: document.getElementById('code').value,
+                name: document.getElementById('clientName').value,
+                phone: document.getElementById('clientPhone').value,
+                address: document.getElementById('clientAddress').value,
+                size: document.getElementById('size').value,
+                amount: document.getElementById('amount').value,
+                notes: fullNotes
+            };
+            shipments.push(newShipment);
+        }
 
-        shipments.push(newShipment);
         saveAndRender();
-        this.reset();
+        resetForm();
     });
+
+    function editShipment(id) {
+        const item = shipments.find(s => s.id === id);
+        if (!item) return;
+
+        document.getElementById('editId').value = item.id;
+        document.getElementById('code').value = item.code;
+        document.getElementById('clientName').value = item.name;
+        document.getElementById('clientPhone').value = item.phone;
+        document.getElementById('clientAddress').value = item.address;
+        document.getElementById('size').value = item.size;
+        document.getElementById('amount').value = item.amount;
+        
+        // تفكيك الملاحظات والأيام إذا وجدت
+        let rawNotes = item.notes || "";
+        document.querySelectorAll('.days-selector input').forEach(cb => {
+            if (rawNotes.includes(cb.value)) {
+                cb.checked = true;
+            } else {
+                cb.checked = false;
+            }
+        });
+
+        // تنظيف الملاحظات من الأيام لعرض الملاحظة الأصلية فقط
+        const daysList = ["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس"];
+        let cleanedNotes = rawNotes;
+        daysList.forEach(day => {
+            cleanedNotes = cleanedNotes.replace(new RegExp(`/?\\s*${day}\\s*(-)?`, 'g'), '');
+        });
+        document.getElementById('notes').value = cleanedNotes.trim().replace(/\/$/, '').trim();
+
+        // تغيير شكل زر الإضافة لزر التحديث
+        const btnSubmit = document.getElementById('btnSubmit');
+        btnSubmit.innerText = "تحديث البوليصة";
+        btnSubmit.className = "btn-update";
+        document.getElementById('btnCancelEdit').style.display = "inline-block";
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+        resetForm();
+    }
+
+    function resetForm() {
+        document.getElementById('shippingForm').reset();
+        document.getElementById('editId').value = '';
+        
+        const btnSubmit = document.getElementById('btnSubmit');
+        btnSubmit.innerText = "إضافة الشحنة";
+        btnSubmit.className = "btn-add";
+        document.getElementById('btnCancelEdit').style.display = "none";
+
+        document.querySelectorAll('.days-selector input').forEach(cb => cb.checked = false);
+    }
 
     function saveAndRender() {
         localStorage.setItem('antika_shipments', JSON.stringify(shipments));
@@ -352,7 +450,12 @@
                     <td>${s.size}</td>
                     <td>${s.amount}</td>
                     <td>${s.notes}</td>
-                    <td><button style="background:#e74c3c; color:white; border:none; padding:5px 10px; cursor:pointer;" onclick="deleteShipment(${s.id})">حذف</button></td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-edit-item" onclick="editShipment(${s.id})">تعديل</button>
+                            <button class="btn-delete-item" onclick="deleteShipment(${s.id})">حذف</button>
+                        </div>
+                    </td>
                 </tr>
             `;
         });
@@ -389,14 +492,20 @@
     }
 
     function deleteShipment(id) {
-        shipments = shipments.filter(s => s.id !== id);
-        saveAndRender();
+        if(confirm('هل أنت متأكد من حذف هذه البوليصة؟')) {
+            shipments = shipments.filter(s => s.id !== id);
+            saveAndRender();
+            if(document.getElementById('editId').value == id) {
+                resetForm();
+            }
+        }
     }
 
     function clearAllData() {
         if(confirm('هل أنت متأكد من مسح جميع الشحنات؟')) {
             shipments = [];
             saveAndRender();
+            resetForm();
         }
     }
 
