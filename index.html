@@ -59,7 +59,7 @@
             font-size: 0.9em;
         }
 
-        .input-group input, .input-group select, .input-group textarea {
+        .input-group input {
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -82,10 +82,6 @@
             font-size: 0.9em;
         }
 
-        .days-selector input[type="checkbox"] {
-            margin-left: 5px;
-        }
-
         .btn-group {
             margin-top: 15px;
             display: flex;
@@ -104,7 +100,6 @@
         .btn-add { background: #27ae60; color: white; }
         .btn-print { background: var(--accent); color: white; }
         .btn-clear { background: #e74c3c; color: white; }
-        button:hover { opacity: 0.9; }
 
         table {
             width: 100%;
@@ -120,11 +115,22 @@
 
         th { background: var(--primary); color: white; }
 
-        /* تنسيق الطباعة (A4 - 5 بوالص) */
+        /* تنسيق الطباعة الأكيد ليتطابق مع الصورة */
+        .print-area {
+            display: none;
+        }
+
         @media print {
-            body * { visibility: hidden; }
-            .print-area, .print-area * { visibility: visible; }
+            body * {
+                visibility: hidden;
+            }
+
+            .print-area, .print-area * {
+                visibility: visible;
+            }
+
             .print-area {
+                display: block;
                 position: absolute;
                 left: 0;
                 top: 0;
@@ -132,29 +138,87 @@
             }
 
             .policy-card {
+                position: relative;
                 width: 100%;
-                height: 18vh;
-                border: 2px dashed #000;
-                margin-bottom: 10px;
-                padding: 10px;
+                height: 180px;
+                border: 2px solid #000;
+                margin-bottom: 8px;
+                padding: 10px 15px;
                 box-sizing: border-box;
                 page-break-inside: avoid;
                 display: flex;
-                flex-direction: column;
                 justify-content: space-between;
+                align-items: center;
+                background: #fff;
+                overflow: hidden;
             }
 
-            .policy-header {
+            /* العلامة المائية */
+            .policy-card::before {
+                content: "Antika portrait";
+                position: absolute;
+                font-size: 3.5rem;
+                color: rgba(0, 0, 0, 0.04);
+                font-weight: bold;
+                transform: rotate(-12deg);
+                pointer-events: none;
+                left: 20%;
+                top: 30%;
+                white-space: nowrap;
+            }
+
+            /* الجانب الأيمن: بيانات العميل */
+            .client-details {
                 display: flex;
-                justify-content: space-between;
-                border-bottom: 1px solid #000;
-                padding-bottom: 5px;
+                flex-direction: column;
+                gap: 4px;
+                font-size: 14px;
+                font-weight: bold;
+                color: #000;
+                z-index: 1;
+                max-width: 70%;
             }
 
-            .policy-body {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                font-size: 0.9em;
+            .client-details div {
+                line-height: 1.3;
+            }
+
+            /* الجانب الأيسر: مربعات الكود والسعر */
+            .left-boxes {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+                width: 130px;
+                z-index: 1;
+            }
+
+            .brand-title {
+                font-weight: bold;
+                font-size: 14px;
+                margin-bottom: 2px;
+                font-family: sans-serif;
+            }
+
+            .info-box {
+                border: 2px solid #000;
+                width: 100%;
+                text-align: center;
+                padding: 3px 0;
+                background: #fff;
+            }
+
+            .info-box .box-label {
+                font-size: 11px;
+                display: block;
+                border-bottom: 1px solid #000;
+                padding-bottom: 1px;
+                margin-bottom: 2px;
+            }
+
+            .info-box .box-value {
+                font-size: 16px;
+                font-weight: bold;
             }
         }
     </style>
@@ -170,22 +234,30 @@
         <form id="shippingForm">
             <div class="form-grid">
                 <div class="input-group">
+                    <label>الكود</label>
+                    <input type="text" id="code" placeholder="مثال: D2372" required>
+                </div>
+                <div class="input-group">
                     <label>اسم العميل</label>
                     <input type="text" id="clientName" required>
                 </div>
                 <div class="input-group">
                     <label>رقم الهاتف</label>
-                    <input type="tel" id="clientPhone" required>
+                    <input type="text" id="clientPhone" required>
                 </div>
                 <div class="input-group">
-                    <label>العنوان التفصيلي</label>
+                    <label>العنوان</label>
                     <input type="text" id="clientAddress" required>
                 </div>
                 <div class="input-group">
-                    <label>المبلغ المطلوب</label>
-                    <input type="number" id="amount" required>
+                    <label>المقاس</label>
+                    <input type="text" id="size" placeholder="مثال: ميدالية / 90*60" required>
                 </div>
                 <div class="input-group">
+                    <label>السعر (السعر)</label>
+                    <input type="number" id="amount" required>
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
                     <label>ملاحظات الشحنة</label>
                     <input type="text" id="notes">
                 </div>
@@ -214,11 +286,12 @@
         <table>
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>الكود</th>
                     <th>اسم العميل</th>
                     <th>الهاتف</th>
                     <th>العنوان</th>
-                    <th>المبلغ</th>
+                    <th>المقاس</th>
+                    <th>السعر</th>
                     <th>الملاحظات</th>
                     <th>الإجراء</th>
                 </tr>
@@ -240,13 +313,15 @@
             .map(cb => cb.value).join(' - ');
 
         const notesInput = document.getElementById('notes').value;
-        const fullNotes = selectedDays ? `${notesInput} (أيام التسليم: ${selectedDays})` : notesInput;
+        const fullNotes = selectedDays ? (notesInput ? `${notesInput} / ${selectedDays}` : selectedDays) : notesInput;
 
         const newShipment = {
             id: Date.now(),
+            code: document.getElementById('code').value,
             name: document.getElementById('clientName').value,
             phone: document.getElementById('clientPhone').value,
             address: document.getElementById('clientAddress').value,
+            size: document.getElementById('size').value,
             amount: document.getElementById('amount').value,
             notes: fullNotes
         };
@@ -267,14 +342,15 @@
         tbody.innerHTML = '';
         document.getElementById('totalCount').innerText = shipments.length;
 
-        shipments.forEach((s, index) => {
+        shipments.forEach((s) => {
             tbody.innerHTML += `
                 <tr>
-                    <td>${index + 1}</td>
+                    <td>${s.code}</td>
                     <td>${s.name}</td>
                     <td>${s.phone}</td>
                     <td>${s.address}</td>
-                    <td>${s.amount} ج.م</td>
+                    <td>${s.size}</td>
+                    <td>${s.amount}</td>
                     <td>${s.notes}</td>
                     <td><button style="background:#e74c3c; color:white; border:none; padding:5px 10px; cursor:pointer;" onclick="deleteShipment(${s.id})">حذف</button></td>
                 </tr>
@@ -289,19 +365,22 @@
         shipments.forEach(s => {
             printArea.innerHTML += `
                 <div class="policy-card">
-                    <div class="policy-header">
-                        <strong>Antika Portrait</strong>
-                        <span>بوليصة شحن</span>
+                    <div class="client-details">
+                        <div><strong>اسم العميل:</strong> ${s.name}</div>
+                        <div><strong>رقم الهاتف:</strong> ${s.phone}</div>
+                        <div><strong>العنوان:</strong> ${s.address}</div>
+                        <div><strong>المقاس:</strong> ${s.size}</div>
+                        <div><strong>ملاحظات:</strong> ${s.notes}</div>
                     </div>
-                    <div class="policy-body">
-                        <div>
-                            <p><strong>العميل:</strong> ${s.name}</p>
-                            <p><strong>الهاتف:</strong> ${s.phone}</p>
-                            <p><strong>العنوان:</strong> ${s.address}</p>
+                    <div class="left-boxes">
+                        <div class="brand-title">Antika portrait</div>
+                        <div class="info-box">
+                            <span class="box-label">الكود</span>
+                            <span class="box-value">${s.code}</span>
                         </div>
-                        <div>
-                            <p><strong>المبلغ المطلوب:</strong> ${s.amount} ج.م</p>
-                            <p><strong>ملاحظات:</strong> ${s.notes}</p>
+                        <div class="info-box">
+                            <span class="box-label">السعر</span>
+                            <span class="box-value">${s.amount}</span>
                         </div>
                     </div>
                 </div>
@@ -315,13 +394,12 @@
     }
 
     function clearAllData() {
-        if(confirm('هل أنت تأكد من مسح جميع الشحنات؟')) {
+        if(confirm('هل أنت متأكد من مسح جميع الشحنات؟')) {
             shipments = [];
             saveAndRender();
         }
     }
 
-    // التحميل الأولي للبيانات
     renderTable();
     renderPrintView();
 </script>
