@@ -3,218 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antika portrait - نظام البوالص المطور</title>
+    <title>أنتيكا بورترييه - نظام البوالص</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin-bottom: 25px; }
-        
-        .form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; outline: none; background-color: white; }
-        
-        .button-group { display: flex; gap: 10px; }
-        button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 6px; transition: 0.3s; font-weight: bold; font-size: 16px; }
-        .btn-add { background-color: #28a745; color: white; flex: 2; }
-        .btn-print { background-color: #007bff; color: white; flex: 1; }
-        .btn-clear-all { background-color: #dc3545; color: white; flex: 1; } /* زرار التصفير الجديد */
-        
-        .labels-container { margin-top: 30px; }
-        
-        /* تصميم البوليصة ليكون واضحاً ومناسباً للمقاس */
-        .label-item { 
-            border: 2px solid #000; 
-            padding: 8px 20px; 
-            margin-bottom: 8px; 
-            display: flex; 
-            justify-content: space-between; 
-            position: relative; 
-            height: 155px; /* تم تقليله ليستوعب 5 بوالص في الشاشة والطباعة */
-            background: #fff;
-            box-sizing: border-box;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 20px;
+            padding: 20px;
         }
-        
-        .label-info { line-height: 1.5; font-size: 18px; color: #000; font-weight: 600; }
-        .label-info strong { font-weight: 900; font-size: 19px; }
-
-        .label-boxes { display: flex; flex-direction: column; gap: 4px; text-align: center; min-width: 140px; justify-content: center; }
-        .box { border: 2px solid #000; padding: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; height: 52px; }
-        .box span:first-child { font-size: 13px; margin-bottom: 1px; }
-        .box span:last-child { font-size: 20px; }
-
-        .watermark { position: absolute; right: 20%; top: 35%; font-size: 50px; color: rgba(0,0,0,0.04); transform: rotate(-15deg); font-weight: bold; pointer-events: none; white-space: nowrap; }
-
-        .controls { position: absolute; left: 5px; top: 5px; display: flex; gap: 5px; }
-        .btn-edit { background-color: #ffc107; color: #000; padding: 3px 8px; font-size: 12px; border-radius: 4px; }
-        .btn-delete { background-color: #dc3545; color: white; padding: 3px 8px; font-size: 12px; border-radius: 4px; }
-
-        /* إعدادات الطباعة الدقيقة */
-        @media print {
-            @page { size: A4; margin: 0.4cm 0.5cm; } /* تقليل الهامش العلوي والسفلي قليلاً */
-            .no-print { display: none !important; }
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; max-width: 100%; padding: 0; margin: 0; }
-            .label-item { 
-                page-break-inside: avoid; 
-                border-width: 2px; 
-                margin-bottom: 4px;
-                height: 17.8vh; /* توزيع الـ 5 بوالص بالتساوي على ارتفاع الصفحة بالظبط */
-            }
-            .controls { display: none !important; }
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="no-print">
-        <h2>Antika portrait - لوحة التحكم</h2>
+<div class="form-container">
+    <h2>أنتيكا بورترييه - بيانات الشحن</h2>
+    <form id="shippingForm">
         <div class="form-group">
-            <input type="hidden" id="editIndex" value="-1">
-            <input type="text" id="custName" placeholder="اسم العميل">
-            <input type="text" id="custPhone" placeholder="رقم الهاتف">
-            <input type="text" id="custAddress" placeholder="العنوان بالتفصيل">
-            <input type="text" id="itemSize" placeholder="المقاس">
-            <input type="text" id="itemCode" placeholder="الكود">
-            <input type="text" id="itemPrice" placeholder="السعر">
-            <select id="labelDay">
-                <option value="">اختر اليوم (اختياري)</option>
-                <option value="السبت">السبت</option>
-                <option value="الأحد">الأحد</option>
-                <option value="الإثنين">الإثنين</option>
-                <option value="الثلاثاء">الثلاثاء</option>
-                <option value="الأربعاء">الأربعاء</option>
-                <option value="الخميس">الخميس</option>
-                <option value="الجمعة">الجمعة</option>
-            </select>
+            <label for="clientName">اسم العميل:</label>
+            <input type="text" id="clientName" placeholder="أدخل اسم العميل">
         </div>
-        <div class="button-group">
-            <button class="btn-add" id="mainBtn" onclick="handleAction()">إضافة بوليصة +</button>
-            <button class="btn-print" onclick="window.print()">طباعة البوالص</button>
-            <button class="btn-clear-all" onclick="clearAllLabels()">تصفير السيستم 🔄</button>
-        </div>
-    </div>
 
-    <div id="labelsArea" class="labels-container">
-    </div>
+        <div class="form-group">
+            <label for="phone">رقم الهاتف:</label>
+            <!-- تم ربط حدث oninput بدالة تحويل الأرقام مباشرة -->
+            <input type="tel" id="phone" placeholder="01122345678" oninput="fixNumbers(this)">
+        </div>
+    </form>
 </div>
 
 <script>
-    let labels = [];
-
-    // دالة لاسترجاع البوالص المحفوظة أول ما الصفحة تفتح
-    window.onload = function() {
-        const savedLabels = localStorage.getItem('antika_labels');
-        if (savedLabels) {
-            labels = JSON.parse(savedLabels);
-            renderLabels();
-        }
-    };
-
-    // دالة لحفظ البوالص في ذاكرة المتصفح تلقائياً
-    function saveToStorage() {
-        localStorage.setItem('antika_labels', JSON.stringify(labels));
-    }
-
-    function handleAction() {
-        const editIndex = document.getElementById('editIndex').value;
-        const data = {
-            name: document.getElementById('custName').value,
-            phone: document.getElementById('custPhone').value,
-            address: document.getElementById('custAddress').value,
-            size: document.getElementById('itemSize').value,
-            code: document.getElementById('itemCode').value,
-            price: document.getElementById('itemPrice').value,
-            day: document.getElementById('labelDay').value // حفظ اليوم
-        };
-
-        if(data.name === "" || data.phone === "") {
-            alert("يا محمد، لازم تدخل الاسم والرقم");
-            return;
-        }
-
-        if(editIndex === "-1") {
-            labels.push(data);
-        } else {
-            labels[editIndex] = data;
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('mainBtn').innerText = "إضافة بوليصة +";
-            document.getElementById('mainBtn').style.backgroundColor = "#28a745";
-        }
-
-        saveToStorage(); // حفظ التغيير فوراً
-        renderLabels();
-        clearInputs();
-    }
-
-    function renderLabels() {
-        const area = document.getElementById('labelsArea');
-        area.innerHTML = "";
+    // دالة تحويل الأرقام الشرقية (العربية) إلى أرقام إنجليزية فورية
+    function fixNumbers(inputField) {
+        const arabicNumbers = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g];
+        const persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g];
         
-        labels.forEach((item, index) => {
-            const notesContent = item.day ? item.day : "/";
+        let val = inputField.value;
 
-            area.innerHTML += `
-                <div class="label-item">
-                    <div class="watermark">Antika portrait</div>
-                    <div class="label-info">
-                        <strong>اسم العميل:</strong> ${item.name}<br>
-                        <strong>رقم الهاتف:</strong> ${item.phone}<br>
-                        <strong>العنوان:</strong> ${item.address}<br>
-                        <strong>المقاس:</strong> ${item.size || '-'}<br>
-                        <strong>ملاحظات:</strong> ${notesContent}
-                    </div>
-                    <div class="label-boxes">
-                        <div style="font-size: 15px; font-weight: bold;">Antika portrait</div>
-                        <div class="box"><span>الكود</span><span>${item.code || '-'}</span></div>
-                        <div class="box"><span>السعر</span><span>${item.price || '-'}</span></div>
-                    </div>
-                    <div class="controls no-print">
-                        <button class="btn-edit" onclick="editLabel(${index})">تعديل</button>
-                        <button class="btn-delete" onclick="deleteLabel(${index})">حذف</button>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    function editLabel(index) {
-        const item = labels[index];
-        document.getElementById('custName').value = item.name;
-        document.getElementById('custPhone').value = item.phone;
-        document.getElementById('custAddress').value = item.address;
-        document.getElementById('itemSize').value = item.size;
-        document.getElementById('itemCode').value = item.code;
-        document.getElementById('itemPrice').value = item.price;
-        document.getElementById('labelDay').value = item.day || ""; 
-        
-        document.getElementById('editIndex').value = index;
-        document.getElementById('mainBtn').innerText = "تحديث البيانات";
-        document.getElementById('mainBtn').style.backgroundColor = "#ffc107";
-        window.scrollTo(0,0);
-    }
-
-    function deleteLabel(index) {
-        if(confirm("تمسح البوليصة دي يا محمد؟")) {
-            labels.splice(index, 1);
-            saveToStorage(); // حفظ بعد الحذف الفردي
-            renderLabels();
+        for (let i = 0; i < 10; i++) {
+            val = val.replace(arabicNumbers[i], i).replace(persianNumbers[i], i);
         }
-    }
 
-    // دالة مسح كل الأوردرات وتفريغ السيستم تماماً بعد الطباعة
-    function clearAllLabels() {
-        if(confirm("هل أنت متأكد من مسح جميع البوالص وبدء يوم جديد؟ (تأكد أنك قمت بالطباعة أولاً)")) {
-            labels = [];
-            localStorage.removeItem('antika_labels'); // مسح التخزين المحلي تماماً
-            renderLabels();
-            clearInputs();
-        }
-    }
-
-    function clearInputs() {
-        document.querySelectorAll('.form-group input').forEach(i => i.value = "");
-        document.getElementById('labelDay').value = ""; 
-        document.getElementById('editIndex').value = "-1";
+        // تحديث قيمة الخانة بالأرقام الإنجليزية
+        inputField.value = val;
     }
 </script>
 
