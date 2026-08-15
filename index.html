@@ -253,7 +253,7 @@
     </div>
 
     <div class="form-section">
-        <form id="shippingForm">
+        <form id="shippingForm" autocomplete="off">
             <input type="hidden" id="editId">
             <div class="form-grid">
                 <div class="input-group">
@@ -266,7 +266,7 @@
                 </div>
                 <div class="input-group">
                     <label>رقم الهاتف</label>
-                    <input type="text" id="clientPhone" required>
+                    <input type="text" id="clientPhone" oninput="convertArabicNumbers(this)" placeholder="مثال: 01151244005" required>
                 </div>
                 <div class="input-group">
                     <label>العنوان</label>
@@ -277,8 +277,8 @@
                     <input type="text" id="size" placeholder="مثال: ميدالية / 90*60" required>
                 </div>
                 <div class="input-group">
-                    <label>السعر (السعر)</label>
-                    <input type="number" id="amount" required>
+                    <label>السعر</label>
+                    <input type="text" id="amount" placeholder="مثال: 460 أو خالص" autocomplete="off" required>
                 </div>
                 <div class="input-group" style="grid-column: span 2;">
                     <label>ملاحظات الشحنة</label>
@@ -330,6 +330,16 @@
 <script>
     let shipments = JSON.parse(localStorage.getItem('antika_shipments')) || [];
 
+    // تحويل الأرقام العربية إلى إنجليزية تلقائياً في خانة الهاتف
+    function convertArabicNumbers(input) {
+        const arabicDigits = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g];
+        let value = input.value;
+        for (let i = 0; i < 10; i++) {
+            value = value.replace(arabicDigits[i], i);
+        }
+        input.value = value;
+    }
+
     document.getElementById('shippingForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -341,7 +351,6 @@
         const fullNotes = selectedDays ? (notesInput ? `${notesInput} / ${selectedDays}` : selectedDays) : notesInput;
 
         if (editId) {
-            // حالة التعديل
             const index = shipments.findIndex(s => s.id == editId);
             if (index !== -1) {
                 shipments[index] = {
@@ -356,7 +365,6 @@
                 };
             }
         } else {
-            // حالة الإضافة الجديدة
             const newShipment = {
                 id: Date.now(),
                 code: document.getElementById('code').value,
@@ -386,7 +394,6 @@
         document.getElementById('size').value = item.size;
         document.getElementById('amount').value = item.amount;
         
-        // تفكيك الملاحظات والأيام إذا وجدت
         let rawNotes = item.notes || "";
         document.querySelectorAll('.days-selector input').forEach(cb => {
             if (rawNotes.includes(cb.value)) {
@@ -396,7 +403,6 @@
             }
         });
 
-        // تنظيف الملاحظات من الأيام لعرض الملاحظة الأصلية فقط
         const daysList = ["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس"];
         let cleanedNotes = rawNotes;
         daysList.forEach(day => {
@@ -404,7 +410,6 @@
         });
         document.getElementById('notes').value = cleanedNotes.trim().replace(/\/$/, '').trim();
 
-        // تغيير شكل زر الإضافة لزر التحديث
         const btnSubmit = document.getElementById('btnSubmit');
         btnSubmit.innerText = "تحديث البوليصة";
         btnSubmit.className = "btn-update";
