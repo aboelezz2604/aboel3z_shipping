@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antika Portrait - نظام البوالص المطور</title>
+    <title>Antika Portrait - نظام بوالص الشحن المتطور</title>
     <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #e67e22;
-            --bg: #f4f6f7;
-            --card-bg: #ffffff;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 20px;
+            background-color: #f4f6f9;
             color: #333;
+            padding: 20px;
         }
 
         .container {
@@ -25,497 +23,595 @@
             margin: 0 auto;
         }
 
-        .header {
+        header {
             text-align: center;
             margin-bottom: 25px;
-            background: var(--primary);
-            color: #fff;
             padding: 20px;
-            border-radius: 8px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
-        .form-section, .list-section {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+        header h1 {
+            color: #1a1a1a;
+            font-size: 26px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-card {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 15px;
+            margin-bottom: 20px;
         }
 
-        .input-group {
+        .form-group {
             display: flex;
             flex-direction: column;
         }
 
-        .input-group label {
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-
-        .input-group input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
-        }
-
-        .days-selector {
+        .form-group.full-width {
             grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        input, textarea, select {
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #1a1a1a;
+        }
+
+        .actions {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
-            margin-top: 10px;
         }
 
-        .days-selector label {
-            background: #eee;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-
-        .btn-group {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            padding: 10px 20px;
+        .btn {
+            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: bold;
-            transition: 0.2s;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
         }
 
-        .btn-add { background: #27ae60; color: white; }
-        .btn-update { background: #2980b9; color: white; }
-        .btn-cancel { background: #7f8c8d; color: white; display: none; }
-        .btn-print { background: var(--accent); color: white; }
-        .btn-clear { background: #e74c3c; color: white; }
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: #333333;
+        }
+
+        .btn-print {
+            background-color: #2e7d32;
+            color: #ffffff;
+        }
+
+        .btn-print:hover {
+            background-color: #1b5e20;
+        }
+
+        .btn-clear {
+            background-color: #c62828;
+            color: #ffffff;
+        }
+
+        .btn-clear:hover {
+            background-color: #b71c1c;
+        }
+
+        /* الجدول والمعاينة */
+        .table-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            overflow-x: auto;
+        }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
             text-align: right;
         }
 
-        th { background: var(--primary); color: white; }
+        th, td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
 
-        .action-btns {
+        th {
+            background-color: #f8f9fa;
+            color: #555;
+        }
+
+        .btn-action {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+
+        .btn-delete {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .btn-edit {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        /* معاينة الطباعة على الشاشة */
+        #print-container {
+            display: block;
+        }
+
+        .a4-page {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 8mm;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             display: flex;
-            gap: 5px;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
         }
 
-        .btn-edit-item {
-            background: #f39c12;
-            color: white;
-            border: none;
-            padding: 5px 10px;
+        .policy-card {
+            border: 2px solid #000;
+            height: 55mm; /* ارتفاع مدروس ليكفي 5 بوالص تماماً */
+            margin-bottom: 3mm;
+            padding: 8px 15px;
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            position: relative;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .policy-card:last-child {
+            margin-bottom: 0;
+        }
+
+        /* العلامة المائية */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 38px;
+            font-weight: 900;
+            color: rgba(0, 0, 0, 0.04);
+            white-space: nowrap;
+            pointer-events: none;
+            user-select: none;
+            font-family: Arial, sans-serif;
+        }
+
+        /* الجانب الأيمن: بيانات العميل */
+        .client-info {
+            flex: 1;
+            padding-left: 15px;
+            z-index: 1;
+        }
+
+        .info-row {
+            margin-bottom: 4px;
+            font-size: 15px;
+            color: #000;
+            line-height: 1.3;
+        }
+
+        .info-row strong {
+            font-weight: 700;
+            display: inline-block;
+            min-width: 85px;
+        }
+
+        .info-row.phone {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* الجانب الأيسر: مربعات الكود والسعر */
+        .brand-boxes {
+            width: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            z-index: 1;
+        }
+
+        .brand-title {
+            font-weight: bold;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .box-unit {
+            border: 1.5px solid #000;
+            width: 100%;
+            text-align: center;
             border-radius: 3px;
-            cursor: pointer;
+            overflow: hidden;
         }
 
-        .btn-delete-item {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
+        .box-header {
+            background: #f0f0f0;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 0;
+            border-bottom: 1px solid #000;
+            color: #333;
         }
 
-        /* تنسيق الطباعة */
-        .print-area {
-            display: none;
+        .box-body {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 4px 0;
+            background: #fff;
         }
 
+        /* CSS الطباعة */
         @media print {
             body * {
                 visibility: hidden;
             }
 
-            .print-area, .print-area * {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            #print-container, #print-container * {
                 visibility: visible;
             }
 
-            .print-area {
-                display: block;
+            #print-container {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
             }
 
-            .policy-card {
-                position: relative;
-                width: 100%;
-                height: 180px;
-                border: 2px solid #000;
-                margin-bottom: 8px;
-                padding: 10px 15px;
-                box-sizing: border-box;
-                page-break-inside: avoid;
+            .a4-page {
+                width: 210mm;
+                height: 290mm; /* تغطية كامل الصفحة A4 */
+                padding: 6mm 8mm;
+                margin: 0;
+                box-shadow: none;
+                page-break-after: always;
                 display: flex;
+                flex-direction: column;
                 justify-content: space-between;
-                align-items: center;
-                background: #fff;
-                overflow: hidden;
+                box-sizing: border-box;
             }
 
-            .policy-card::before {
-                content: "Antika portrait";
-                position: absolute;
-                font-size: 3.5rem;
-                color: rgba(0, 0, 0, 0.04);
-                font-weight: bold;
-                transform: rotate(-12deg);
-                pointer-events: none;
-                left: 20%;
-                top: 30%;
-                white-space: nowrap;
-            }
-
-            .client-details {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                font-size: 14px;
-                font-weight: bold;
-                color: #000;
-                z-index: 1;
-                max-width: 70%;
-            }
-
-            .client-details div {
-                line-height: 1.3;
-            }
-
-            .left-boxes {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 6px;
-                width: 130px;
-                z-index: 1;
-            }
-
-            .brand-title {
-                font-weight: bold;
-                font-size: 14px;
-                margin-bottom: 2px;
-                font-family: sans-serif;
-            }
-
-            .info-box {
+            .policy-card {
+                height: 19.2%; /* تقسيم متساوي على 5 بوالص */
+                margin-bottom: 0;
                 border: 2px solid #000;
-                width: 100%;
-                text-align: center;
-                padding: 3px 0;
-                background: #fff;
+                padding: 10px 18px;
             }
 
-            .info-box .box-label {
-                font-size: 11px;
-                display: block;
-                border-bottom: 1px solid #000;
-                padding-bottom: 1px;
-                margin-bottom: 2px;
+            .info-row {
+                font-size: 16px; /* خط كبير ومقروء للمندوب */
+                line-height: 1.4;
             }
 
-            .info-box .box-value {
-                font-size: 16px;
-                font-weight: bold;
+            .info-row.phone {
+                font-size: 17px;
+            }
+
+            .brand-boxes {
+                width: 150px;
+            }
+
+            .box-body {
+                font-size: 20px;
+            }
+
+            .no-print {
+                display: none !important;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h2>Antika Portrait - نظام إدارة الشحنات</h2>
-    </div>
+<div class="container no-print">
+    <header>
+        <h1>Antika Portrait - إدارة بوالص الشحن</h1>
+        <p>نظام إدخال وطباعة البوالص (5 بوالص في صفحة A4 كاملة)</p>
+    </header>
 
-    <div class="form-section">
-        <form id="shippingForm" autocomplete="off">
-            <input type="hidden" id="editId">
+    <!-- نموذج الإدخال -->
+    <div class="form-card">
+        <form id="policy-form">
+            <input type="hidden" id="edit-index" value="-1">
             <div class="form-grid">
-                <div class="input-group">
-                    <label>الكود</label>
-                    <input type="text" id="code" placeholder="مثال: D2372" required>
+                <div class="form-group">
+                    <label for="client-name">اسم العميل:</label>
+                    <input type="text" id="client-name" required placeholder="مثال: هنا محمد">
                 </div>
-                <div class="input-group">
-                    <label>اسم العميل</label>
-                    <input type="text" id="clientName" required>
+                <div class="form-group">
+                    <label for="client-phone">رقم الهاتف:</label>
+                    <input type="text" id="client-phone" required placeholder="مثال: 01005337863 / 01061822857">
                 </div>
-                <div class="input-group">
-                    <label>رقم الهاتف</label>
-                    <input type="text" id="clientPhone" oninput="convertArabicNumbers(this)" placeholder="مثال: 01151244005" required>
+                <div class="form-group">
+                    <label for="item-code">الكود:</label>
+                    <input type="text" id="item-code" required placeholder="مثال: D2395">
                 </div>
-                <div class="input-group">
-                    <label>العنوان</label>
-                    <input type="text" id="clientAddress" required>
+                <div class="form-group">
+                    <label for="item-price">السعر (ج.م):</label>
+                    <input type="text" id="item-price" required placeholder="مثال: 300">
                 </div>
-                <div class="input-group">
-                    <label>المقاس</label>
-                    <input type="text" id="size" placeholder="مثال: ميدالية / 90*60" required>
+                <div class="form-group">
+                    <label for="item-size">المقاس:</label>
+                    <input type="text" id="item-size" placeholder="مثال: 3 * 30*40">
                 </div>
-                <div class="input-group">
-                    <label>السعر</label>
-                    <input type="text" id="amount" placeholder="مثال: 460 أو خالص" autocomplete="off" required>
+                <div class="form-group">
+                    <label for="notes">ملاحظات:</label>
+                    <input type="text" id="notes" placeholder="مثال: الإتنين">
                 </div>
-                <div class="input-group" style="grid-column: span 2;">
-                    <label>ملاحظات الشحنة</label>
-                    <input type="text" id="notes">
+                <div class="form-group full-width">
+                    <label for="client-address">العنوان التفصيلي:</label>
+                    <textarea id="client-address" rows="2" required placeholder="مثال: البحيرة دمنهور ش عرابي أمام مسجد التوبة عمارة طمان"></textarea>
                 </div>
             </div>
-
-            <div class="days-selector">
-                <span style="width: 100%; font-weight: bold;">أيام التسليم المفضلة:</span>
-                <label><input type="checkbox" value="السبت"> السبت</label>
-                <label><input type="checkbox" value="الأحد"> الأحد</label>
-                <label><input type="checkbox" value="الإثنين"> الإثنين</label>
-                <label><input type="checkbox" value="الثلاثاء"> الثلاثاء</label>
-                <label><input type="checkbox" value="الأربعاء"> الأربعاء</label>
-                <label><input type="checkbox" value="الخميس"> الخميس</label>
-            </div>
-
-            <div class="btn-group">
-                <button type="submit" id="btnSubmit" class="btn-add">إضافة الشحنة</button>
-                <button type="button" id="btnCancelEdit" class="btn-cancel" onclick="cancelEdit()">إلغاء التعديل</button>
-                <button type="button" class="btn-print" onclick="window.print()">طباعة البوالص</button>
-                <button type="button" class="btn-clear" onclick="clearAllData()">مسح الكل</button>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary" id="btn-save">إضافة بوليصة</button>
+                <button type="button" class="btn btn-print" onclick="window.print()">طباعة البوالص 🖨️</button>
+                <button type="button" class="btn btn-clear" onclick="clearAllPolicies()">مسح الكل 🗑️</button>
             </div>
         </form>
     </div>
 
-    <div class="list-section">
-        <h3>قائمة الشحنات المضافة (<span id="totalCount">0</span>)</h3>
+    <!-- جدول البوالص المدخلة -->
+    <div class="table-card">
+        <h3>قائمة البوالص المدخلة (<span id="count">0</span>)</h3>
+        <br>
         <table>
             <thead>
                 <tr>
+                    <th>#</th>
                     <th>الكود</th>
                     <th>اسم العميل</th>
                     <th>الهاتف</th>
                     <th>العنوان</th>
-                    <th>المقاس</th>
                     <th>السعر</th>
-                    <th>الملاحظات</th>
-                    <th>الإجراء</th>
+                    <th>المقاس</th>
+                    <th>إجراءات</th>
                 </tr>
             </thead>
-            <tbody id="shipmentsTable"></tbody>
+            <tbody id="policies-table-body">
+                <!-- يتم التعبئة من خلال JavaScript -->
+            </tbody>
         </table>
     </div>
 </div>
 
-<div id="printArea" class="print-area"></div>
+<!-- حاوية الطباعة والمعاينة -->
+<div id="print-container">
+    <!-- يتم بناء صفحات A4 هنا بواسطة JavaScript -->
+</div>
 
 <script>
-    let shipments = JSON.parse(localStorage.getItem('antika_shipments')) || [];
-
-    // تحويل الأرقام العربية إلى إنجليزية تلقائياً في خانة الهاتف
-    function convertArabicNumbers(input) {
+    // 1. تحويل جميع الأرقام العربية/الشرقية إلى إنجليزية
+    function convertArabicDigitsToEnglish(str) {
+        if (!str) return '';
         const arabicDigits = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g];
-        let value = input.value;
+        let result = str.toString();
         for (let i = 0; i < 10; i++) {
-            value = value.replace(arabicDigits[i], i);
+            result = result.replace(arabicDigits[i], i);
         }
-        input.value = value;
+        return result;
     }
 
-    document.getElementById('shippingForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const editId = document.getElementById('editId').value;
-        const selectedDays = Array.from(document.querySelectorAll('.days-selector input:checked'))
-            .map(cb => cb.value).join(' - ');
-
-        const notesInput = document.getElementById('notes').value;
-        const fullNotes = selectedDays ? (notesInput ? `${notesInput} / ${selectedDays}` : selectedDays) : notesInput;
-
-        if (editId) {
-            const index = shipments.findIndex(s => s.id == editId);
-            if (index !== -1) {
-                shipments[index] = {
-                    id: Number(editId),
-                    code: document.getElementById('code').value,
-                    name: document.getElementById('clientName').value,
-                    phone: document.getElementById('clientPhone').value,
-                    address: document.getElementById('clientAddress').value,
-                    size: document.getElementById('size').value,
-                    amount: document.getElementById('amount').value,
-                    notes: fullNotes
-                };
-            }
-        } else {
-            const newShipment = {
-                id: Date.now(),
-                code: document.getElementById('code').value,
-                name: document.getElementById('clientName').value,
-                phone: document.getElementById('clientPhone').value,
-                address: document.getElementById('clientAddress').value,
-                size: document.getElementById('size').value,
-                amount: document.getElementById('amount').value,
-                notes: fullNotes
-            };
-            shipments.push(newShipment);
-        }
-
-        saveAndRender();
-        resetForm();
+    // ربط الحدث بجميع المدخلات لتحويل الأرقام تلقائياً في كل الخانات
+    document.querySelectorAll('input, textarea').forEach(element => {
+        element.addEventListener('input', function() {
+            this.value = convertArabicDigitsToEnglish(this.value);
+        });
     });
 
-    function editShipment(id) {
-        const item = shipments.find(s => s.id === id);
-        if (!item) return;
+    // 2. إدارة البيانات في LocalStorage
+    let policies = JSON.parse(localStorage.getItem('antika_policies')) || [];
 
-        document.getElementById('editId').value = item.id;
-        document.getElementById('code').value = item.code;
-        document.getElementById('clientName').value = item.name;
-        document.getElementById('clientPhone').value = item.phone;
-        document.getElementById('clientAddress').value = item.address;
-        document.getElementById('size').value = item.size;
-        document.getElementById('amount').value = item.amount;
-        
-        let rawNotes = item.notes || "";
-        document.querySelectorAll('.days-selector input').forEach(cb => {
-            if (rawNotes.includes(cb.value)) {
-                cb.checked = true;
-            } else {
-                cb.checked = false;
-            }
-        });
-
-        const daysList = ["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس"];
-        let cleanedNotes = rawNotes;
-        daysList.forEach(day => {
-            cleanedNotes = cleanedNotes.replace(new RegExp(`/?\\s*${day}\\s*(-)?`, 'g'), '');
-        });
-        document.getElementById('notes').value = cleanedNotes.trim().replace(/\/$/, '').trim();
-
-        const btnSubmit = document.getElementById('btnSubmit');
-        btnSubmit.innerText = "تحديث البوليصة";
-        btnSubmit.className = "btn-update";
-        document.getElementById('btnCancelEdit').style.display = "inline-block";
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function cancelEdit() {
-        resetForm();
-    }
-
-    function resetForm() {
-        document.getElementById('shippingForm').reset();
-        document.getElementById('editId').value = '';
-        
-        const btnSubmit = document.getElementById('btnSubmit');
-        btnSubmit.innerText = "إضافة الشحنة";
-        btnSubmit.className = "btn-add";
-        document.getElementById('btnCancelEdit').style.display = "none";
-
-        document.querySelectorAll('.days-selector input').forEach(cb => cb.checked = false);
-    }
+    const form = document.getElementById('policy-form');
+    const tableBody = document.getElementById('policies-table-body');
+    const printContainer = document.getElementById('print-container');
+    const countSpan = document.getElementById('count');
 
     function saveAndRender() {
-        localStorage.setItem('antika_shipments', JSON.stringify(shipments));
+        localStorage.setItem('antika_policies', JSON.stringify(policies));
         renderTable();
-        renderPrintView();
+        renderPrintPages();
     }
 
-    function renderTable() {
-        const tbody = document.getElementById('shipmentsTable');
-        tbody.innerHTML = '';
-        document.getElementById('totalCount').innerText = shipments.length;
+    // إضافة أو تعديل بوليصة
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const editIndex = parseInt(document.getElementById('edit-index').value);
 
-        shipments.forEach((s) => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${s.code}</td>
-                    <td>${s.name}</td>
-                    <td>${s.phone}</td>
-                    <td>${s.address}</td>
-                    <td>${s.size}</td>
-                    <td>${s.amount}</td>
-                    <td>${s.notes}</td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn-edit-item" onclick="editShipment(${s.id})">تعديل</button>
-                            <button class="btn-delete-item" onclick="deleteShipment(${s.id})">حذف</button>
-                        </div>
-                    </td>
-                </tr>
+        const policyData = {
+            name: convertArabicDigitsToEnglish(document.getElementById('client-name').value),
+            phone: convertArabicDigitsToEnglish(document.getElementById('client-phone').value),
+            code: convertArabicDigitsToEnglish(document.getElementById('item-code').value),
+            price: convertArabicDigitsToEnglish(document.getElementById('item-price').value),
+            size: convertArabicDigitsToEnglish(document.getElementById('item-size').value),
+            notes: convertArabicDigitsToEnglish(document.getElementById('notes').value),
+            address: convertArabicDigitsToEnglish(document.getElementById('client-address').value)
+        };
+
+        if (editIndex === -1) {
+            policies.push(policyData);
+        } else {
+            policies[editIndex] = policyData;
+            document.getElementById('edit-index').value = "-1";
+            document.getElementById('btn-save').textContent = "إضافة بوليصة";
+        }
+
+        form.reset();
+        saveAndRender();
+    });
+
+    // عرض الجدول
+    function renderTable() {
+        tableBody.innerHTML = '';
+        countSpan.textContent = policies.length;
+
+        policies.forEach((p, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong>${p.code}</strong></td>
+                <td>${p.name}</td>
+                <td>${p.phone}</td>
+                <td>${p.address}</td>
+                <td>${p.price} ج.م</td>
+                <td>${p.size || '-'}</td>
+                <td>
+                    <button class="btn-action btn-edit" onclick="editPolicy(${index})">تعديل</button>
+                    <button class="btn-action btn-delete" onclick="deletePolicy(${index})">حذف</button>
+                </td>
             `;
+            tableBody.appendChild(tr);
         });
     }
 
-    function renderPrintView() {
-        const printArea = document.getElementById('printArea');
-        printArea.innerHTML = '';
+    // تعديل بوليصة
+    window.editPolicy = function(index) {
+        const p = policies[index];
+        document.getElementById('client-name').value = p.name;
+        document.getElementById('client-phone').value = p.phone;
+        document.getElementById('item-code').value = p.code;
+        document.getElementById('item-price').value = p.price;
+        document.getElementById('item-size').value = p.size;
+        document.getElementById('notes').value = p.notes;
+        document.getElementById('client-address').value = p.address;
 
-        shipments.forEach(s => {
-            printArea.innerHTML += `
-                <div class="policy-card">
-                    <div class="client-details">
-                        <div><strong>اسم العميل:</strong> ${s.name}</div>
-                        <div><strong>رقم الهاتف:</strong> ${s.phone}</div>
-                        <div><strong>العنوان:</strong> ${s.address}</div>
-                        <div><strong>المقاس:</strong> ${s.size}</div>
-                        <div><strong>ملاحظات:</strong> ${s.notes}</div>
+        document.getElementById('edit-index').value = index;
+        document.getElementById('btn-save').textContent = "تحديث البوليصة";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // حذف بوليصة
+    window.deletePolicy = function(index) {
+        if (confirm('هل أنت تأكد من حذف هذه البوليصة؟')) {
+            policies.splice(index, 1);
+            saveAndRender();
+        }
+    };
+
+    // مسح جميع البوالص
+    window.clearAllPolicies = function() {
+        if (policies.length === 0) return;
+        if (confirm('هل أنت تأكد من مسح جميع البوالص؟')) {
+            policies = [];
+            saveAndRender();
+        }
+    };
+
+    // 3. بناء صفحات الطباعة A4 (توزيع 5 بوالص لكل صفحة بملء كامل المساحة)
+    function renderPrintPages() {
+        printContainer.innerHTML = '';
+
+        if (policies.length === 0) return;
+
+        let currentPage = null;
+
+        policies.forEach((p, index) => {
+            // كل 5 بوالص في صفحة A4 جديدة
+            if (index % 5 === 0) {
+                currentPage = document.createElement('div');
+                currentPage.className = 'a4-page';
+                printContainer.appendChild(currentPage);
+            }
+
+            const card = document.createElement('div');
+            card.className = 'policy-card';
+
+            card.innerHTML = `
+                <div class="watermark">Antika portrait</div>
+                
+                <div class="client-info">
+                    <div class="info-row"><strong>اسم العميل:</strong> ${p.name}</div>
+                    <div class="info-row phone"><strong>رقم الهاتف:</strong> ${p.phone}</div>
+                    <div class="info-row"><strong>العنوان:</strong> ${p.address}</div>
+                    ${p.size ? `<div class="info-row"><strong>المقاس:</strong> ${p.size}</div>` : ''}
+                    ${p.notes ? `<div class="info-row"><strong>ملاحظات:</strong> ${p.notes}</div>` : ''}
+                </div>
+
+                <div class="brand-boxes">
+                    <div class="brand-title">Antika portrait</div>
+                    <div class="box-unit">
+                        <div class="box-header">الكود</div>
+                        <div class="box-body">${p.code}</div>
                     </div>
-                    <div class="left-boxes">
-                        <div class="brand-title">Antika portrait</div>
-                        <div class="info-box">
-                            <span class="box-label">الكود</span>
-                            <span class="box-value">${s.code}</span>
-                        </div>
-                        <div class="info-box">
-                            <span class="box-label">السعر</span>
-                            <span class="box-value">${s.amount}</span>
-                        </div>
+                    <div class="box-unit">
+                        <div class="box-header">السعر</div>
+                        <div class="box-body">${p.price}</div>
                     </div>
                 </div>
             `;
+
+            currentPage.appendChild(card);
         });
     }
 
-    function deleteShipment(id) {
-        if(confirm('هل أنت متأكد من حذف هذه البوليصة؟')) {
-            shipments = shipments.filter(s => s.id !== id);
-            saveAndRender();
-            if(document.getElementById('editId').value == id) {
-                resetForm();
-            }
-        }
-    }
-
-    function clearAllData() {
-        if(confirm('هل أنت متأكد من مسح جميع الشحنات؟')) {
-            shipments = [];
-            saveAndRender();
-            resetForm();
-        }
-    }
-
+    // التحميل الأولي
     renderTable();
-    renderPrintView();
+    renderPrintPages();
 </script>
 
 </body>
